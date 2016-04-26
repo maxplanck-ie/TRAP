@@ -1,0 +1,10 @@
+############################
+Tue Apr 26 17:39:47 CEST 2016
+Split matrix into approx. 1 chunks: /home/manke/tools/TRAP/utilities/splitFile.pl -m 6 -p results.22273/trapMatrix/matrices/matrix_ -e ^> results.22273/test.psem
+/home/manke/tools/TRAP/bin/ANNOTATE_v3.05 -s /home/manke/tools/TRAP/data/Mm.1000.promoters.fa --psem results.22273/trapMatrix/matrices/matrix_0000 -g 0.5 > results.22273/trapMatrix/gff/matrix_0000.gff &
+collecting TRAP results: cat results.22273/trapMatrix/gff/*gff > results.22273/trapMatrix/Mm.1000.promoters.gff
+convert results.22273/trapMatrix/Mm.1000.promoters.gff to Rdat: /package/R-3.2.3/bin/Rscript /home/manke/tools/TRAP/utilities/trap2Rdat.R results.22273/trapMatrix/Mm.1000.promoters.gff results.22273/trapMatrix/trap
+rm -r results.22273/trapMatrix/gff results.22273/trapMatrix/Mm.1000.promoters.gff
+/home/manke/tools/TRAP/utilities/trap2mat.sh finished. 
+Tue Apr 26 17:39:49 CEST 2016
+############################

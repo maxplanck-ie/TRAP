@@ -1,0 +1,46 @@
+1. Compile and build
+====================
+
+To compile and build ANNOTATE use:
+
+   make
+
+
+2. Install
+==========
+
+To install ANNOTATE use:
+
+   make install
+
+To install under a specific PREFIX use:
+
+   make install PREFIX=/usr/local
+
+For packaging use DESTDIR:
+
+   make install PREFIX=/usr/local DESTDIR=/tmp/destdir
+
+This will install ANNOTATE_v<VERSION> in PREFIX/bin
+
+
+3. Running ANNOTATE
+===================
+
+You can run ANNOTATE directly from the build directory with:
+
+./ANNOTATE
+
+or to get more help:
+
+./ANNOTATE -h
+
+After installation you can also run it with:
+
+ANNOTATE_v<VERSION> (e.g. ANNOTATE_v3.05)
+
+Make sure the installation prefixes bindir is in your PATH:
+
+e.g. (in bash)
+
+  export PATH=/usr/local/bin:${PATH}

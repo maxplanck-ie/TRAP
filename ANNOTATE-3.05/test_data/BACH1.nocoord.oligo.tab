@@ -1,0 +1,37 @@
+; oligo-analysis  -i BACH1.nocoord.fa -l 1 -return occ,freq -v 1
+; Citation: van Helden et al. (1998). J Mol Biol 281(5), 827-42. 
+; Program version              	1.136
+; Oligomer length              	1
+; Input file                   	BACH1.nocoord.fa
+; Input format                 	fasta
+; Count overlapping matches
+; Counted on both strands
+; 	grouped by pairs of reverse complements
+; Background model             	bernoulli
+; Method                       	
+; Sequence type                	DNA
+; Nb of sequences              	1
+; Sum of sequence lengths      	62249
+; discarded residues           	0	 (other letters than ACGT)
+; discarded occurrences        	0	 (contain discarded residues)
+; nb possible positions        	62249
+; total oligo occurrences      	62249
+; alphabet size                	4
+; nb possible oligomers        	2
+; oligomers tested for significance	0
+; Threshold values
+;	Parameter      	Lower	Upper
+;	occ_P          	none	1
+; Sequences:
+;	ENSG00000156273	62249
+;
+; column headers
+;	1	seq            	oligomer sequence
+;	2	id             	oligomer identifier
+;	3	observed_freq  	observed relative frequency
+;	4	occ            	observed occurrences
+#seq	id	observed_freq	occ
+a	a|t	0.6050538964481	37664
+c	c|g	0.3949461035519	24585
+; Job started 2009_07_20.111802
+; Job done    2009_07_20.111802

@@ -1,0 +1,110 @@
+=head2 Fri Nov  3 13:51:05 2006: C<Module> L<Math::DiscreteDistribution|Math::DiscreteDistribution>
+
+=over 4
+
+=item *
+
+C<installed into: /project/gbrowse/biominerva_lib/v03_11_2006>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Nov  3 13:51:14 2006: C<Module> L<BioMinerva::Base|BioMinerva::Base>
+
+=over 4
+
+=item *
+
+C<installed into: /project/gbrowse/biominerva_lib/v03_11_2006>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.2>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Nov  3 13:51:33 2006: C<Module> L<BioMinerva::DNALib|BioMinerva::DNALib>
+
+=over 4
+
+=item *
+
+C<installed into: /project/gbrowse/biominerva_lib/v03_11_2006>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Nov  3 14:09:03 2006: C<Module> L<BioMinerva::Base|BioMinerva::Base>
+
+=over 4
+
+=item *
+
+C<installed into: /project/gbrowse/biominerva_lib/v03_11_2006>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.2>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Nov  3 14:09:12 2006: C<Module> L<BioMinerva::Base|BioMinerva::Base>
+
+=over 4
+
+=item *
+
+C<installed into: /project/gbrowse/biominerva_lib/v03_11_2006>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.2>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+

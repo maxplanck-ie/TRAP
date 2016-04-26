@@ -1,0 +1,98 @@
+TRAP/Annotation Tool
+
+README By Morgane Thomas_Chollier
+
+10th July 2009
+--------------
+
+Changes made to version v2.07 => v3.01
+
+- complete and reorganised the manual
+- enhance the option validation/checking
+- hit_based: modified the cutoff option.
+	option -t is the external cutoff given by the user (no change here)
+	
+	if the cutoff is included in the header of the matrix:
+	either /cutoff= 
+	or 3 types of headers:
+	/type_I_cutoff='7.35' /type_II_cutoff='3.5' /balanced_cutoff='5.65'
+	new option --ttype allows to choose between these 3 values : typeI, type II, balanced
+ 
+ - extract matrix conversion formats from the annotation tool:
+ 	1 program: 	convert-pscm
+ 				convert pscm to pssm or psem, with input format in transfac or bulyck format
+ 				where the pseudocounts, gc contents ... are dealt with
+ 	1 program: 	TRAP
+ 				handles the calculation of the hits or the affinity
+ 	1 wrapper in PERL, called Annotation, that calls the two programs
+ 	
+ - convert-pscm:
+ => manual
+ => explicit options for range of GC content, G+C content more modular
+ => matrix header tokenizer function enhanced : take all informations (not just name and cutoff), allow : or =, with '' or not
+ => separate a "write matrix" class, for clarity
+ => simplify handling of the reverse matrix
+ => ouput pssm, psem + pspm
+ 
+- ANNOTATE
+
+=> enhance the window system for small shift (large overlapping regions)
+=> enhance masking system. Possibility to score N instead of skipping the entire match (--mscore option)
+
+Summary of new options
+
+--range
+--mscore
+
+17th December 2009
+--------------
+
+Changes made to version v3.01 => v3.02
+
+-Added the option --discard, which allows to discard some positions of the motif. The program assigns the highest mismatch value to this (these) position(s).
+
+19th April 2010
+--------------
+
+Changes made to version v3.01 => v3.02b
+
+Debug the --ttype option
+
+28th June 2010
+--------------
+
+Changes made to version v3.02b => v3.03
+
+- Documentation: add -name 
+- added the --tab option to output a table instead of a GFF file (only compatible with affinity calculation, for use with PASTAA)
+
+6th January 2011
+--------------
+
+Changes made to version v3.03 => v3.04
+- strand option to allow single strand calculation
+- fix bug: the program does not loop forever if the input sequence file is not a fasta file. Now produce an error.
+
+14th June 2013
+--------------
+
+Changes made to version v3.04 => v3.04.01
+by  Marius Tolzmann <marius.tolzmann@molgen.mpg.de>
+
+- fix build bug ("g++ -arch" is not known on linux and was introduced in 3.04)
+
+Changes made to version v3.04.01 => v3.05
+by  Marius Tolzmann <marius.tolzmann@molgen.mpg.de>
+
+- change the build system by rewriting the makefile
+- Add new install target to make file
+- Now "make && make install" works out of the box and accepts
+  PREFIX and DESTDIR
+
+
+____________________________________________________________________________
+IDEAS:
+- handling of ambiguous nucleotides
+- masking upper/lower case
+- triming the matrix columns that are poorly informative, around the core of the matrix (Helge's way)
+- type option (as Helge), which is a correction for the varying lengths of the promoters
