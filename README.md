@@ -7,15 +7,12 @@ The source code alone can also be found here: http://trap.molgen.mpg.de/download
 Apart from calculating affinities, the program also allows very fast calculation of motif occurence ("hits") in genomic sequences.
 The code was initially written by Helge Roider, Abhinab Ray and Thomas Manke. Later modifications were made by Morgane Thomas Chollier.
 
-The primary output of the ANNOTATE program is a GFF file, which can be very large. Several utilities have been written to convert this into more user-friendly formats
-such as BED, BEDGRAPH, bigBED and bigWig (for loading into genome browsers).
+The primary output of the ANNOTATE program is a GFF file, which can be very large. The main purpose of this repository is to provide several utilities which have been written to convert this into more user-friendly formats such as BED, BEDGRAPH, bigBED and bigWig (for loading into genome browsers).
 There are also tools that convert ANNOTATE output into a matrix (seq_id x matrix_id) of TRAP-scores or number of hits.
 This matrix is stored in R-format (*.Rdat) and simple R scripts for basic analysis (finding discriminatory motifs) are also provided.
 
 
-A necessary starting point for all annotation tools is a set of motif matrices that contain the observed nucleotide counts in sequence alignements.
-This is also known as position-specific count matrices (PSCM). This repository contains a number of tools to convert PSCM into
-other matrices such as position-specific energy matrices (PSEM) used for TRAP, and position-specific score matrices (PSSM) used by hit-based methods.
+A necessary starting point for all annotation tools is a set of motif matrices that contain the observed nucleotide counts in sequence alignements. This is also known as position-specific count matrices (PSCM). This repository contains a number of tools to convert PSCM into other matrices such as position-specific energy matrices (PSEM) used for TRAP, and position-specific score matrices (PSSM) used by hit-based methods.
 
 Morgane Thomas-Chollier wrote the source code for the convert-pscm tool.
 Szymon Kielbasa wrote the pscm2pssm.pl script and the corresponding library (BioMinerva).
