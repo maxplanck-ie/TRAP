@@ -95,9 +95,9 @@ then
 fi
 
 
-mkdir $dir
-mkdir $mdir	
-mkdir $gdir
+mkdir -p $dir
+mkdir -p $mdir	
+mkdir -p $gdir
 
 regexp="^>"             # regular expression to detect number of matrix entries in $mat (header lines)
 prefix=${mdir}/matrix_  # prefix to store chunks of $mat          
