@@ -1,5 +1,6 @@
 # Rscript trap2Rdat.R trap.gff trap_out
 # converts gff to Rdat (data.frame) this is specifc to output from ANNOTATE_v3.05
+library(reshape2)
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -24,7 +25,9 @@ saveRDS(trap,file=Rdat)
 ###### filter and convert to (seq-mat) matrix with normalized TRAP-scores
 discard=which(trap$eff_length==0)
 if (length(discard)>0) { trap=trap[-discard,] }
-A=xtabs(norm_score ~ seq_id + matrix_id, data=trap)
+# A=xtabs(norm_score ~ seq_id + matrix_id, data=trap) # this was appropriate only for hits (hits2Rdat)
+
+A=acast(trap[,c("matrix_id","seq_id", "norm_score")], seq_id ~ matrix_id, value.var = "norm_score")
 saveRDS(A,file=Rmat)
 
 
