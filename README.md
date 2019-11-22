@@ -1,4 +1,4 @@
-# TrAP
+# TRAP
 This repository contains the source code of ANNOTATE (version 3.05). The program is used to annotate DNA sequences with motifs.
 The central application contains an implementation of the TRAP algorithm to predict Transcription Factor Affinities as first 
 reported in Roider et al. 2007 [1].
