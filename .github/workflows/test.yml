@@ -12,8 +12,8 @@ jobs:
     - name: Run a one-line script
       run: echo Hello, world!
 
-    - name: Run crap
-      run: crap
+    - name: Make TRAP
+      run: cd ANNOTATE-3.05; make
 
     - name: Run a multi-line script
       run: |
