@@ -1,0 +1,308 @@
+---
+title: "rankMotifs_groups.Rmd"
+author: "Thomas Manke"
+date: "`r date() `"
+output:
+  
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: '2'
+    toc_float: yes
+    code_folding: hide
+  html_notebook:
+    
+    code_folding: hide
+    df_print: paged
+    fig_height: 10
+    fig_width: 10
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    
+# runtime: shiny  # uncomment if shiny part is to be run below
+---
+# Intro
+This is a notbook version of a simple R-script
+https://github.com/maxplanck-ie/TRAP/blob/master/utilities/rankMotifs_groups.R
+
+Input:
+
+1. a sequence-motif matrix with TRAP-scores
+2. a list of sequence identifiers (optionally with group labels)
+
+Output: Ranked list of motifs according to their discriminative power for the sequences
+
+ 
+# Setup
+```{r setup}
+# set global knitr options
+knitr::opts_chunk$set(warning = FALSE, eval=TRUE)
+knitr::opts_chunk$set(root.dir=getwd())             # default: location of the markdown file
+
+# load libraries
+library(parallel)
+library(tidyverse)
+
+# define functions
+# passing sequence ids (seq1, seq2) explicitly
+#wt = function(x) { wilcox.test (A[seq1,x], A[seq2,x])$p.value  }   # two-sided wilcox p-value
+#lf = function(x) { log2(  mean(A[seq1,x])/mean(A[seq2,x])  )   }   # log2-fold change
+
+# passing group-ids
+lf  = function(x) { rr=aggregate(A[,x] ~ groups, as.data.frame(A[,x]), mean ); return (log2(rr[1,2]/rr[2,2])) }
+wt  = function(x) { wilcox.test (A[,x] ~ groups)$p.value  }         # two-sided wilcox p-value
+kt  = function(x) { kruskal.test(A[,x] ~ groups)$p.value }          # kruskal test for multiple groups  
+lmf = function(x) { lm( A[,x] ~ groups )  }                         # define linear model of TRAP-score as function of group
+
+
+# define global variables
+myred=rgb(1,0,0,0.5)
+myblue=rgb(0,0,1,0.5)
+myyellow=rgb(1,1,0,0.5)
+pid=Sys.getpid()     # process id (not needed)
+```
+
+
+# Read Arguments
+```{r read_arguments}
+usage=
+"This script takes as input
+	1. a sequence-motif matrix A of TRAP-scores: trap.mat, (Rdat file)
+	2. a list seqs of sequence ids (optionally with group labels): gene.list (ascii [2-column]) 
+	3. output directory to indicate whether the matrix A should be reduced to entries listed in seqs
+	4. an optional flag \"reduceA\" to indicate whether the matrix A should be reduced to entries listed in seqs
+
+The script outputs a directory with *tsv files of ranked motif list according to some group test
+        a. For two groups a Wilcoxon test is performed (wilcox.tsv)
+	b. For two or more groups a Kruskal-Wallis test is performed (kruskal.tsv)
+        c. A box plot for the top motifs is also generated (kruskal.jpg)
+
+Usage: R -e \"rmarkdown::render('rankMotifs_groups.Rmd')\" --args matrix.mat gene.list out.directory [reduceA] \n"
+
+# set default files (examples) and directory
+f1="trap.Rds"
+f2="liver.tsv"
+dn=paste0("rankMotifs_groups.", pid)   # directory with process-ID
+reduceA=FALSE                          # default: do _not_ reduce matrix A
+
+args = commandArgs(trailingOnly=TRUE)
+la=length(args)
+#if (la<3) { cat(usage); stop() } 
+if (la<3) { 
+  warning(usage, "\n", "Use defaults\n")
+  } else { 
+  f1=args[1]
+  f2=args[2]
+  dn=args[3]
+}
+if (la>3) { reduceA= grepl( paste0("^",args(4)), "reduceA",ignore.case=TRUE) }  # TRUE if third argument is specified and is (or abbreviates) "reduceA"
+
+dir.create(dn, recursive=TRUE)
+cat("write results to directory", dn, "\n")
+```
+
+# Read Data
+```{r read_data}
+A    = readRDS(f1)                   # read matrix of TRAP-scores
+
+cat("Read matrix A: ", dim(A), " from file ", f1, "\n")
+ir=min(3,nrow(A))
+ic=min(3,ncol(A))
+A[1:ir,1:ic]
+
+seqs = read.table(f2,row.names=1)    # read list of sequence. Possibly with unique group annotations (seqs$V2). No duplicated rownames
+cat("Read seqs: ", dim(seqs), " from file ", f2, "\n")
+head(seqs,3)
+```
+
+# Filtering
+
+```{r filter}
+if (reduceA) {
+  i=which(rownames(seqs) %in% rownames(A))
+  A=A[i,]
+}
+
+N = nrow(A)         # number of sequences
+M = ncol(A)         # number of motif matrices
+nlist=rownames(A)   # list of all sequence_ids
+mlist=colnames(A)   # list of all matrix_ids
+
+cat("Dimension of A after filtering:", dim(A), "\n")
+```
+
+# Groups
+```{r groups}
+# assign unique group names (=factors) to sequences
+if (ncol(seqs)==0) { seqs$V2=factor("signal") }    # if groups are not explicitly named in seqs, then call this group "signal"
+groups=gl(1, nrow(A))                              # create groups for all genes in A
+levels(groups)=c("backgroundA",levels(seqs$V2))    # define levels of all groups in A, default group: "backgroundA"
+i=which(rownames(A) %in% rownames(seqs))
+groups[i]=seqs[rownames(A[i,]), "V2"]              # set group level to those defined by seqs
+
+#table(groups)                                     # some levels may not have any support if they are filtered out
+groups=droplevels(groups)                          # drop all levels that are not supported by data in A (i.e. groups that only exist in list seqs)
+nl=nlevels(groups)                                 # number of levels defined in groups 
+tb=table(groups)                                      # should not have any zero entries
+```
+
+
+```{r show_table}
+cat(N," sequences are divided in ", nl, " groups from file ", f2, "\n")
+#groups %>% as_data_frame() %>% ggplot(aes(x=groups)) + geom_bar() + geom_text(stat='count', aes(label=..count..), color="red", vjust=-0.5)
+
+groups %>% as_data_frame() %>% ggplot(aes(x=groups)) + geom_bar() + geom_text(stat='count', aes(label=..count..), color="red") + coord_flip()
+
+tb
+```
+
+
+########################################################################
+```{r cluster, eval=FALSE, echo=FALSE}
+# Initialize compute cluster for parallel processing: --> parSapply
+cl=makeCluster(2)
+clusterExport(cl,c("groups","A"))   # pass objects to cluster
+```
+
+# Wilcoxon Test
+If there are only two sets, define the motifs with significant TRAP differences between the two sets.
+```{r wilcox}
+if (nl == 2) {
+  
+	log2FC<-sapply(mlist, lf)     # fold-change calculation over list of motifs mlist
+	pvalues<-sapply(mlist, wt)    # wilcoxon test pvalue calculation over list of motifs mlist
+
+	#log2FC<-parSapply(cl, mlist, lf)     # parallelize fold-change calculation over list of motifs mlist
+	#pvalues<-parSapply(cl, mlist, wt)    # parallelize wilcoxon test pvalue calculation over list of motifs mlist
+	fdr = p.adjust(pvalues, method="fdr")
+
+	res = rbind(log2FC = log2FC, pvalue=pvalues, fdr=fdr )
+	res = t(res)                            # transpose
+	res = res[order(res[,"pvalue"]),]       # order by p-values
+
+	fn=file.path(dn,"wilcox.tsv")
+	cat(file=fn, "#Wilcoxon test. N=",N," M=",M,"\n")
+	cat(file=fn, "#groups: ",names(tb), "\n", append=TRUE)
+	cat(file=fn, "#sizes:  ",tb,"\n", append=TRUE)
+	cat(file=fn, "#matrix","log2FC", "pvalue","fdr","\n",sep="\t",append=TRUE)
+	write.table(file=fn, res, quote=FALSE,col.names=FALSE, sep="\t", append=TRUE)
+  cat("Wrote results to ", fn, "\n")
+}
+```
+
+########################################################################
+# Kruskal Test 
+The Kruskal test extends Wilcoxon to multiple groups of sequences (includes nl=2)
+```{r kruskal}
+#pvalues<-parSapply(cl,mlist,kt)      # parallelize Kruskal test for each motif in mlist
+pvalues<-sapply(mlist,kt)             # Kruskal test for each motif in mlist
+fdr=p.adjust(pvalues,method="fdr")
+res=data.frame(pvalue=pvalues,fdr=fdr)
+
+res=res[order(res[,"pvalue"]),]                                              # sort results by pvalue
+fn=paste(dn,"/kruskal.tsv",sep="")                                           # filename for output
+cat(file=fn,"#Kruskal test. N=", N, " M=", M, "\n")                          # print header information
+cat(file=fn,"#groups:", levels(groups), "\n",append=TRUE)
+cat(file=fn,"#sizes: ", table(groups), "\n",append=TRUE)
+cat(file=fn,"#matrix", names(res), "\n", sep="\t", append=TRUE)
+write.table(file=fn, res,quote=FALSE, col.names = FALSE, sep="\t",append=TRUE)
+
+cat("Wrote results to ", fn, "\n")
+
+# Kruskal generalizes Anova
+# Anova model: normality assumption
+#models       = parSapply(cl,  mlist, lmf, simplify=FALSE)
+#anova_tables = parSapply(cl, models, anova, simplify=FALSE)
+#anovap=lapply(anova_tables, function(x) x$"Pr(>F)"[[1]])
+#res$anovap=unlist(anovap)
+```
+
+
+
+
+# Plotting
+```{r plots}
+# define top-significant motifs
+fdr_thresh=0.05
+top=which(res[,"fdr"]<fdr_thresh)          # define top results (based on Kruskal-test (FDR)
+if (length(top)<3) { top=1:3 }             # show at least the top three motifs
+
+# prepare for A for efficient boxplot
+DF=as.data.frame(A[,rownames(res)[top]])   # convert top entries of A to data frame: 
+mn=names(DF)                               # keep motif names
+DF$groups=groups                           # assign groups to DF
+
+# library(reshape2)
+# DF=melt(DF, value.name="TRAP", id.vars="groups", variable.name="motif")  # old: reshape2::melt
+
+DF = DF %>% gather(key="motif", value="TRAP", -groups) %>% mutate(motif = as.factor(motif))
+DF = DF %>% mutate(motif=sprintf("%s \n %2.3e",motif, res[motif,"fdr"]))      # add (rounded) fdr as new line to motif name
+
+gp = ggplot(DF, aes(x=motif,y=TRAP, col=groups)) + geom_violin() + coord_flip()   # ggplot
+
+
+gp
+
+ # send plot to jpeg file
+fn=file.path(dn,"kruskal.jpg") 
+jpeg(fn)                                                                    
+gp
+do=dev.off()
+
+cat("Sent boxplot to ", fn, "\n")
+```
+
+
+```{r old_boxplot, eval=FALSE}
+# similar with base R
+fn=file.path(dn,"kruskal.old.jpg") 
+jpeg(fn)                                                                    
+bp=boxplot(TRAP~groups*motif,data=DF,col=rainbow(nl),horizontal=TRUE,las=1,boxwex=0.5,xlab="TRAP-score",notch=TRUE, main="Significant Motifs",yaxt="n")
+xp=min(DF$TRAP)*0.95                     # x-position  for text
+yps=0.5 + seq(1, nl*length(mn), by=nl)   # y-positions for text 
+fdrs=sprintf("%2.3e",res[top,"fdr"])     # fdr-values for each motif to be plotted at (x,y)
+axis(2, labels=mn,at=yps,las=2)                                                 # plot y-axis with motif names
+text(xp, yps,labels = fdrs,cex = 0.75)                                          # set text (fdr-values)
+legend("topright",inset=0.03, legend=levels(groups), fill=rainbow(nl), cex=0.8) # plot legend for nl group levels
+do=dev.off()
+
+cat("Sent boxplot to ", fn, "\n")
+```
+
+
+```{r shiny, eval=FALSE, echo=FALSE}
+# shiny renders the dynamic ggplot poorly. None of the following suggestions fixed the problem
+#1. return plot-Object (ggp) rather than plotting witnin renderPlot
+#2. use different library  
+# library(Cairo)
+# options(shiny.usecairo=T)
+# 3. safe intermediate file and  renderImage() --> https://shiny.rstudio.com/articles/images.html (not yet tried)
+
+numericInput("n", "Number of top motifs", 3, min=2)
+
+renderPlot({
+  top=1:input$n
+  DF=as.data.frame(A[,rownames(res)[top]])             # convert top entries of A to data frame: 
+  # the following is safer (for top=1:1), but slower (first convert then select)
+  # instead enforce input$n >= 2
+  # DF=as.data.frame(A) %>% select(rownames(res)[top]);  
+  
+  mn=names(DF)                               # keep motif names
+  DF$groups=groups                           # assign groups to DF
+  DF = DF %>% gather(key="motif", value="TRAP", -groups) %>% mutate(motif = as.factor(motif))
+  DF = DF %>% mutate(motif=sprintf("%s \n %2.3e",motif, res[motif,"fdr"]))         # add (rounded) fdr as new line to motif name
+  ggp = ggplot(DF, aes(x=motif,y=TRAP, col=groups)) + geom_violin() + coord_flip()   # create ggplot object
+  ggp # return ggplot object       
+})
+```
+
+```{r final}
+#stopCluster(cl)
+sessionInfo()
+
+# deprecated: saving all data objects for subsequent analysis
+# this was never much used and may leave an unnecessarily large storage footprint
+# sn=paste0(dn, "/rankMotifs_groups.Rdata")
+# save.image(file=sn)
+```
