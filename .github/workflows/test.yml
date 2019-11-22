@@ -12,8 +12,11 @@ jobs:
     - name: Run a one-line script
       run: echo Hello, world!
 
-    - name: Make TRAP
-      run: cd ANNOTATE-3.05; make
+    - name: Not a real tests
+      run: 
+        echo "testing not yet implemented"
+        ls
+        uptime
 
     - name: Run a multi-line script
       run: |
