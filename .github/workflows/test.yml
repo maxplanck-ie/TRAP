@@ -12,11 +12,12 @@ jobs:
     - name: Run a one-line script
       run: echo Hello, world!
 
-    - name: Not a real tests
-      run: 
+    - shell: bash
+      run: |
         echo "testing not yet implemented"
-        ls
-        uptime
+        out1=`ls -al`
+        out2=`uptime`
+        echo "$out1 $out2"
 
     - name: Run a multi-line script
       run: |
