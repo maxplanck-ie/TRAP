@@ -19,7 +19,15 @@ output:
     toc: yes
     toc_depth: 2
     toc_float: yes
-    
+
+# set default files (examples) and directory
+params:
+  f1: "trap.Rds"
+  f2: "liver.tsv"
+  pid: !r Sys.getpid()
+  dn: "rankMotifs_groups"
+  reduceA: FALSE
+   
 # runtime: shiny  # uncomment if shiny part is to be run below
 ---
 # Intro
@@ -33,7 +41,6 @@ Input:
 
 Output: Ranked list of motifs according to their discriminative power for the sequences
 
- 
 # Setup
 ```{r setup}
 # set global knitr options
@@ -60,7 +67,6 @@ lmf = function(x) { lm( A[,x] ~ groups )  }                         # define lin
 myred=rgb(1,0,0,0.5)
 myblue=rgb(0,0,1,0.5)
 myyellow=rgb(1,1,0,0.5)
-pid=Sys.getpid()     # process id (not needed)
 ```
 
 
@@ -68,35 +74,30 @@ pid=Sys.getpid()     # process id (not needed)
 ```{r read_arguments}
 usage=
 "This script takes as input
-	1. a sequence-motif matrix A of TRAP-scores: trap.mat, (Rdat file)
-	2. a list seqs of sequence ids (optionally with group labels): gene.list (ascii [2-column]) 
-	3. output directory to indicate whether the matrix A should be reduced to entries listed in seqs
-	4. an optional flag \"reduceA\" to indicate whether the matrix A should be reduced to entries listed in seqs
+	1. a sequence-motif matrix A of TRAP-scores: trap.mat, (Rds file)
+	2. a list seqs of sequence ids (optionally with group labels): gene_list.tsv (ascii [2-column]) 
+	3. an output directory name dn:  will be recreated (recursively)
+	4. a flag \"reduceA\" to indicate whether the matrix A should be reduced to entries listed in seqs (default: FALSE)
 
-The script outputs a directory with *tsv files of ranked motif list according to some group test
+The script/markdown outputs a directory with *tsv files of ranked motif list according to some group test
         a. For two groups a Wilcoxon test is performed (wilcox.tsv)
-	b. For two or more groups a Kruskal-Wallis test is performed (kruskal.tsv)
+	      b. For two or more groups a Kruskal-Wallis test is performed (kruskal.tsv)
         c. A box plot for the top motifs is also generated (kruskal.jpg)
+        d. a markdown report (html)
+Usage: R -e \"rmarkdown::render('rankMotifs_groups.Rmd',  params = list(f1 = \"file.Rds\", f2 = \"list.tsv\", dn=\"output_dir\" ) )\" 
 
-Usage: R -e \"rmarkdown::render('rankMotifs_groups.Rmd')\" --args matrix.mat gene.list out.directory [reduceA] \n"
+\n"
 
-# set default files (examples) and directory
-f1="trap.Rds"
-f2="liver.tsv"
-dn=paste0("rankMotifs_groups.", pid)   # directory with process-ID
-reduceA=FALSE                          # default: do _not_ reduce matrix A
 
-args = commandArgs(trailingOnly=TRUE)
-la=length(args)
-#if (la<3) { cat(usage); stop() } 
-if (la<3) { 
-  warning(usage, "\n", "Use defaults\n")
-  } else { 
-  f1=args[1]
-  f2=args[2]
-  dn=args[3]
-}
-if (la>3) { reduceA= grepl( paste0("^",args(4)), "reduceA",ignore.case=TRUE) }  # TRUE if third argument is specified and is (or abbreviates) "reduceA"
+# Copy-Paste Example: 
+# Rscript -e "rmarkdown::render('~/R/Rstudio/TRAP/rankMotifs_groups.Rmd', params = list(dn='test')) "
+warning(usage)
+
+pid=params$pid
+f1=params$f1
+f2=params$f2
+dn=paste0(params$dn,".", pid)
+reduceA=params$reduceA
 
 dir.create(dn, recursive=TRUE)
 cat("write results to directory", dn, "\n")
