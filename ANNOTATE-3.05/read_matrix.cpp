@@ -72,7 +72,7 @@ void read_matrix_file(const char *mat_file_name){
 		adapt_matrix_params();
 		score_mat_back = score_mat_forw; //copy the forward into the reverse
 
-		while(matfile.getline(mat_line,1000,'\n')!=NULL){
+		while(matfile.getline(mat_line,1000,'\n')){
 
 			if ((mat_line[0] == '\0') || (mat_line[0] == ';'))
 				// skipping empty mat_lines if any
